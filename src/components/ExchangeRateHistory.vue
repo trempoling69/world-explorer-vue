@@ -27,8 +27,8 @@ export default {
   methods: {
     createChart: function () {
       chart = createChart(this.$refs.chart, {
-        width: 400,
-        height: 300,
+        width: 800,
+        height: 600,
       });
     },
     refreshChart: function () {
