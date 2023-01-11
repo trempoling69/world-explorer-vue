@@ -2,6 +2,11 @@
   <div>
     <h2>{{ title }}</h2>
     <input type="text" v-model="filter" />
+    <currency-selector
+      :currencies="allCurrencies"
+      :selectedCurrency="baseCurrency"
+      @currencyChange="updateBaseCurrency"
+    ></currency-selector>
     <table class="table">
       <theader>
         <tr>
@@ -27,10 +32,7 @@
           <td>
             <ul>
               <li v-for="(cur, key) in country.currencies" :key="key">
-                <button
-                  class="button is-ghost"
-                  @click="currency = key"
-                >
+                <button class="button is-ghost" @click="currency = key">
                   {{ key }}
                 </button>
               </li>
@@ -55,7 +57,18 @@
     <div class="modal" :class="{ 'is-active': isCurrency }">
       <div class="modal-background"></div>
       <div class="modal-content">
-        <exchange-rate-history :currency="currency"></exchange-rate-history>
+        <div class="chart-container">
+          Base currency :
+          <currency-selector
+            :currencies="allCurrencies"
+            :selectedCurrency="baseCurrency"
+            @currencyChange="updateBaseCurrency"
+          ></currency-selector>
+          <exchange-rate-history
+            :currency="currency"
+            :base-currency="baseCurrency"
+          ></exchange-rate-history>
+        </div>
       </div>
       <button
         class="modal-close is-large"
@@ -69,17 +82,19 @@
 <script>
 import axios from "axios";
 import ExchangeRateHistory from "./components/ExchangeRateHistory.vue";
+import CurrencySelector from "./components/CurrencySelector.vue";
 
 export default {
   name: "App",
-  components: { ExchangeRateHistory },
+  components: { ExchangeRateHistory, CurrencySelector },
   data() {
     return {
       title: "World Explorer",
       countries: [],
       filter: "",
       flag: "",
-      currency: ""
+      currency: "",
+      baseCurrency: "EUR",
     };
   },
   methods: {
@@ -88,6 +103,9 @@ export default {
         .get("https://restcountries.com/v3.1/all")
         .then((response) => (this.countries = response.data))
         .catch((error) => console.error(error));
+    },
+    updateBaseCurrency(newCurrency) {
+      this.baseCurrency = newCurrency;
     },
   },
   computed: {
@@ -106,7 +124,20 @@ export default {
     },
     isCurrency: function () {
       return this.currency !== "";
-    }
+    },
+    allCurrencies: function () {
+      if (this.countries.length > 0) {
+        const currencies = [];
+
+        this.countries.forEach((country) => {
+          if (country.currencies)
+            currencies.push(...Object.keys(country.currencies));
+        });
+        return [...new Set(currencies)].sort();
+      }
+
+      return [];
+    },
   },
   mounted() {
     this.fetchCountries();
@@ -116,4 +147,10 @@ export default {
 
 <style>
 @import "~bulma/css/bulma.css";
+</style>
+
+<style scoped>
+  .chart-container {
+    background-color: #ffffff;
+  }
 </style>

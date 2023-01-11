@@ -1,6 +1,6 @@
 <template>
   <div class="chart-container">
-    <h2>Exchange rate history for {{ currency }} against EUR</h2>
+    <h2>Exchange rate history for {{ currency }} against {{ baseCurrency }}</h2>
     <div ref="chart"></div>
   </div>
 </template>
@@ -18,17 +18,21 @@ export default {
       type: String,
       default: "EUR",
     },
+    baseCurrency: {
+      type:String,
+      default: "EUR"
+    }
   },
   computed: {
     dataUrl: function () {
-      return `https://api.exchangerate.host/timeseries?start_date=2022-12-01&end_date=2023-01-10&base=EUR&symbols=${this.currency}`;
+      return `https://api.exchangerate.host/timeseries?start_date=2022-12-01&end_date=2023-01-10&base=${this.baseCurrency}&symbols=${this.currency}`;
     },
   },
   methods: {
     createChart: function () {
       chart = createChart(this.$refs.chart, {
-        width: 800,
-        height: 600,
+        width: 400,
+        height: 300,
       });
     },
     refreshChart: function () {
@@ -64,7 +68,7 @@ export default {
     this.refreshChart();
   },
   watch: {
-    currency: function () {
+    dataUrl: function () {
       this.refreshChart();
     },
   },
