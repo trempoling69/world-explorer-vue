@@ -19,7 +19,7 @@
       <tbody>
         <tr v-for="country in filteredCountries" v-bind:key="country.fifa">
           <td>
-            <button class="button is-ghost" @click="flag = country.flags.png">
+            <button class="button is-ghost" @click="openFlag(country)">
               {{ country.name.common }}
             </button>
           </td>
@@ -47,45 +47,15 @@
         </tr>
       </tbody>
     </table>
-    <div class="modal" :class="{ 'is-active': isFlag }">
+    <div class="modal" :class="{ 'is-active': showOverlay }">
       <div class="modal-background"></div>
       <div class="modal-content">
-        <embedded-image :src="flag"></embedded-image>
+        <component :is="targetComponent" v-bind="targetProperties"></component>
       </div>
       <button
         class="modal-close is-large"
         aria-label="close"
-        @click="flag = ''"
-      ></button>
-    </div>
-    <div class="modal" :class="{ 'is-active': showCurrency }">
-      <div class="modal-background"></div>
-      <div class="modal-content">
-        <exchange-rate-wrapper
-          :currencies="allCurrencies"
-          :currency="currency"
-          :baseCurrency="baseCurrency"
-          @baseCurrencyChange="updateBaseCurrency"
-        >
-        </exchange-rate-wrapper>
-      </div>
-      <button
-        class="modal-close is-large"
-        aria-label="close"
-        @click="currency = ''"
-      ></button>
-    </div>
-    <div class="modal" :class="{ 'is-active': showMap }">
-      <div class="modal-background"></div>
-      <div class="modal-content">
-        <div>
-          <embedded-map :query="mapQuery" :zoom="mapZoom"></embedded-map>
-        </div>
-      </div>
-      <button
-        class="modal-close is-large"
-        aria-label="close"
-        @click="closeMap"
+        @click="closeOverlay"
       ></button>
     </div>
   </div>
@@ -93,29 +63,28 @@
 
 <script>
 import axios from "axios";
-import EmbeddedImage from "./components/EmbeddedImage.vue";
+import CountryFlag from "./components/CountryFlag.vue";
+import CountryMap from "./components/CountryMap.vue";
 import ExchangeRateWrapper from "./components/ExchangeRateWrapper.vue";
 import CurrencySelector from "./components/CurrencySelector.vue";
-import EmbeddedMap from "./components/EmbeddedMap.vue";
 
 export default {
   name: "App",
   components: {
-    EmbeddedImage,
+    CountryFlag,
+    CountryMap,
     ExchangeRateWrapper,
     CurrencySelector,
-    EmbeddedMap,
   },
   data() {
     return {
       title: "World Explorer",
       countries: [],
       filter: "",
-      flag: "",
       currency: "",
       baseCurrency: "EUR",
-      mapQuery: "",
-      mapZoom: 2,
+      targetComponent: "",
+      targetCountry: null,
     };
   },
   methods: {
@@ -128,25 +97,16 @@ export default {
     updateBaseCurrency(newCurrency) {
       this.baseCurrency = newCurrency;
     },
-    getAreaZoom(area) {
-      if (area >= 10000000) return 2;
-
-      if (area >= 1000000) return 3;
-
-      if (area >= 500000) return 4;
-
-      if (area >= 100000) return 5;
-
-      if (area >= 50000) return 6;
-
-      return 9;
+    openFlag: function(country) {
+      this.targetCountry = country;
+      this.targetComponent = "CountryFlag";
     },
     openMap: function (country) {
-      this.mapZoom = this.getAreaZoom(country.area);
-      this.mapQuery = country.name.common;
+      this.targetCountry = country;
+      this.targetComponent = "CountryMap";
     },
-    closeMap: function () {
-      this.mapQuery = "";
+    closeOverlay: function () {
+      this.targetComponent = "";
     },
   },
   computed: {
@@ -159,6 +119,24 @@ export default {
       return this.sortedCountries.filter((c) =>
         c.name.common.toLowerCase().includes(this.filter.toLowerCase())
       );
+    },
+    targetProperties: function() {
+      let props = {};
+
+      switch(this.targetComponent) {
+        case "CountryFlag":
+        case "CountryMap":
+          props.country = this.targetCountry;
+          break;
+        default:
+          props = null;
+          break;
+      }
+
+      return props;
+    },
+    showOverlay: function() {
+      return this.targetComponent !== "";
     },
     isFlag: function () {
       return this.flag !== "";
