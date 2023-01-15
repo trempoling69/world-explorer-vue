@@ -50,9 +50,7 @@
     <div class="modal" :class="{ 'is-active': isFlag }">
       <div class="modal-background"></div>
       <div class="modal-content">
-        <p class="image is-4by3">
-          <img :src="flag" alt="" />
-        </p>
+        <embedded-image :src="flag"></embedded-image>
       </div>
       <button
         class="modal-close is-large"
@@ -95,13 +93,19 @@
 
 <script>
 import axios from "axios";
+import EmbeddedImage from "./components/EmbeddedImage.vue";
 import ExchangeRateWrapper from "./components/ExchangeRateWrapper.vue";
 import CurrencySelector from "./components/CurrencySelector.vue";
 import EmbeddedMap from "./components/EmbeddedMap.vue";
 
 export default {
   name: "App",
-  components: { ExchangeRateWrapper, CurrencySelector, EmbeddedMap },
+  components: {
+    EmbeddedImage,
+    ExchangeRateWrapper,
+    CurrencySelector,
+    EmbeddedMap,
+  },
   data() {
     return {
       title: "World Explorer",
