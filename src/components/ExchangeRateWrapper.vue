@@ -30,11 +30,11 @@ export default {
     },
     currency: {
         type: String,
-        default: "EUR"
+        default: ""
     },
     baseCurrency: {
         type: String,
-        default: "EUR"
+        default: ""
     }
   },
   methods: {

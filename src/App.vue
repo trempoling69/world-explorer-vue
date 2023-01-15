@@ -33,7 +33,10 @@
           <td>
             <ul>
               <li v-for="(cur, key) in country.currencies" :key="key">
-                <button class="button is-ghost" @click="currency = key">
+                <button
+                  class="button is-ghost"
+                  @click="openExchangeRate(country, key)"
+                >
                   {{ key }}
                 </button>
               </li>
@@ -50,7 +53,7 @@
     <div class="modal" :class="{ 'is-active': showOverlay }">
       <div class="modal-background"></div>
       <div class="modal-content">
-        <component :is="targetComponent" v-bind="targetProperties"></component>
+        <component :is="targetComponent" v-bind="targetProperties" v-on="targetEventHandlers"></component>
       </div>
       <button
         class="modal-close is-large"
@@ -65,7 +68,7 @@
 import axios from "axios";
 import CountryFlag from "./components/CountryFlag.vue";
 import CountryMap from "./components/CountryMap.vue";
-import ExchangeRateWrapper from "./components/ExchangeRateWrapper.vue";
+import CountryExchangeRate from "./components/CountryExchangeRate.vue";
 import CurrencySelector from "./components/CurrencySelector.vue";
 
 export default {
@@ -73,7 +76,7 @@ export default {
   components: {
     CountryFlag,
     CountryMap,
-    ExchangeRateWrapper,
+    CountryExchangeRate,
     CurrencySelector,
   },
   data() {
@@ -81,10 +84,10 @@ export default {
       title: "World Explorer",
       countries: [],
       filter: "",
-      currency: "",
       baseCurrency: "EUR",
       targetComponent: "",
       targetCountry: null,
+      targetCurrency: "",
     };
   },
   methods: {
@@ -94,16 +97,24 @@ export default {
         .then((response) => (this.countries = response.data))
         .catch((error) => console.error(error));
     },
+    updateTargetCurrency(newCurrency) {
+      this.targetCurrency = newCurrency;
+    },
     updateBaseCurrency(newCurrency) {
       this.baseCurrency = newCurrency;
     },
-    openFlag: function(country) {
+    openFlag: function (country) {
       this.targetCountry = country;
       this.targetComponent = "CountryFlag";
     },
     openMap: function (country) {
       this.targetCountry = country;
       this.targetComponent = "CountryMap";
+    },
+    openExchangeRate: function (country, currency) {
+      this.targetCountry = country;
+      this.targetCurrency = currency;
+      this.targetComponent = "CountryExchangeRate";
     },
     closeOverlay: function () {
       this.targetComponent = "";
@@ -120,13 +131,19 @@ export default {
         c.name.common.toLowerCase().includes(this.filter.toLowerCase())
       );
     },
-    targetProperties: function() {
+    targetProperties: function () {
       let props = {};
 
-      switch(this.targetComponent) {
+      switch (this.targetComponent) {
         case "CountryFlag":
         case "CountryMap":
           props.country = this.targetCountry;
+          break;
+        case "CountryExchangeRate":
+          props.country = this.targetCountry;
+          props.currencies = this.allCurrencies;
+          props.currency = this.targetCurrency;
+          props.baseCurrency = this.baseCurrency;
           break;
         default:
           props = null;
@@ -135,17 +152,17 @@ export default {
 
       return props;
     },
-    showOverlay: function() {
+    targetEventHandlers: function () {
+      if (this.targetComponent === "CountryExchangeRate")
+        return {
+          currencyChange: this.updateTargetCurrency,
+          baseCurrencyChange: this.updateBaseCurrency,
+        };
+
+      return {};
+    },
+    showOverlay: function () {
       return this.targetComponent !== "";
-    },
-    isFlag: function () {
-      return this.flag !== "";
-    },
-    showCurrency: function () {
-      return this.currency !== "";
-    },
-    showMap: function () {
-      return this.mapQuery !== "";
     },
     allCurrencies: function () {
       if (this.countries.length > 0) {

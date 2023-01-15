@@ -9,19 +9,19 @@ import { createChart } from "lightweight-charts";
 import axios from "axios";
 
 let chart = null;
-let lineSeries = null;
+let series = null;
 
 export default {
   name: "ExchangeRateHistory",
   props: {
     currency: {
       type: String,
-      default: "EUR",
+      default: "",
     },
     baseCurrency: {
-      type:String,
-      default: "EUR"
-    }
+      type: String,
+      default: "",
+    },
   },
   computed: {
     dataUrl: function () {
@@ -34,8 +34,11 @@ export default {
         width: 400,
         height: 300,
       });
+
+      series = chart.addLineSeries();
     },
     refreshChart: function () {
+      console.log("refresh chart with : ", this.dataUrl)
       axios
         .get(this.dataUrl)
         .then((result) => {
@@ -46,22 +49,17 @@ export default {
             };
           });
 
-          if (lineSeries) chart.removeSeries(lineSeries);
-
-          lineSeries = chart.addLineSeries();
-          lineSeries.setData(data);
+          series.setData(data);
         })
         .catch((error) => console.error(error));
     },
-    removeChart: function() {
-        if (chart) {
-            chart.remove();
-            chart = null;
-        }
-        if (lineSeries)
-            lineSeries = null;
-
-    }
+    removeChart: function () {
+      if (chart) {
+        chart.remove();
+        chart = null;
+      }
+      if (series) series = null;
+    },
   },
   mounted() {
     this.createChart();

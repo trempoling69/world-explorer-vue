@@ -1,20 +1,21 @@
 <template>
-  <div>
+  <div class="main-container">
     Country currency :
     <currency-selector
       :currencies="countryCurrencies"
       :selected-currency="localCurrency"
-      @currency-change="updateLocalCurrency"
+      @currencyChange="updateLocalCurrency"
     ></currency-selector>
     <exchange-rate-wrapper
       :currencies="currencies"
       :currency="localCurrency"
+      :base-currency="baseCurrency"
+      @baseCurrencyChange="forwardBaseCurrencyChange"
     ></exchange-rate-wrapper>
   </div>
 </template>
 <script>
 import ExchangeRateWrapper from "./ExchangeRateWrapper.vue";
-import CurrencySelector from "./CurrencySelector.vue";
 import CurrencySelector from "./CurrencySelector.vue";
 
 export default {
@@ -41,6 +42,7 @@ export default {
     },
     baseCurrency: {
       type: String,
+      default: ""
     },
   },
   computed: {
@@ -53,6 +55,9 @@ export default {
   methods: {
     updateLocalCurrency(newCurrency) {
         this.localCurrency = newCurrency;
+    },
+    forwardBaseCurrencyChange: function(newCurrency) {
+        this.$emit("baseCurrencyChange", newCurrency);
     }
   },
   mounted() {
@@ -60,3 +65,8 @@ export default {
   },
 };
 </script>
+<style scoped>
+  .main-container {
+    background-color: #ffffff;
+  }
+</style>
