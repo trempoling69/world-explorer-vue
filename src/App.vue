@@ -40,9 +40,9 @@
             </ul>
           </td>
           <td>
-                <button class="button is-ghost" @click="openMap(country)">
-                  Map
-                </button>
+            <button class="button is-ghost" @click="openMap(country)">
+              Map
+            </button>
           </td>
         </tr>
       </tbody>
@@ -60,21 +60,16 @@
         @click="flag = ''"
       ></button>
     </div>
-    <div class="modal" :class="{ 'is-active': isCurrency }">
+    <div class="modal" :class="{ 'is-active': showCurrency }">
       <div class="modal-background"></div>
       <div class="modal-content">
-        <div class="chart-container">
-          Base currency :
-          <currency-selector
-            :currencies="allCurrencies"
-            :selectedCurrency="baseCurrency"
-            @currencyChange="updateBaseCurrency"
-          ></currency-selector>
-          <exchange-rate-history
-            :currency="currency"
-            :base-currency="baseCurrency"
-          ></exchange-rate-history>
-        </div>
+        <exchange-rate-wrapper
+          :currencies="allCurrencies"
+          :currency="currency"
+          :baseCurrency="baseCurrency"
+          @baseCurrencyChange="updateBaseCurrency"
+        >
+        </exchange-rate-wrapper>
       </div>
       <button
         class="modal-close is-large"
@@ -100,13 +95,13 @@
 
 <script>
 import axios from "axios";
-import ExchangeRateHistory from "./components/ExchangeRateHistory.vue";
+import ExchangeRateWrapper from "./components/ExchangeRateWrapper.vue";
 import CurrencySelector from "./components/CurrencySelector.vue";
 import EmbeddedMap from "./components/EmbeddedMap.vue";
 
 export default {
   name: "App",
-  components: { ExchangeRateHistory, CurrencySelector, EmbeddedMap },
+  components: { ExchangeRateWrapper, CurrencySelector, EmbeddedMap },
   data() {
     return {
       title: "World Explorer",
@@ -116,7 +111,7 @@ export default {
       currency: "",
       baseCurrency: "EUR",
       mapQuery: "",
-      mapZoom: 2
+      mapZoom: 2,
     };
   },
   methods: {
@@ -130,30 +125,25 @@ export default {
       this.baseCurrency = newCurrency;
     },
     getAreaZoom(area) {
-      if (area >= 10000000)
-        return 2;
+      if (area >= 10000000) return 2;
 
-      if (area >= 1000000)
-        return 3;
+      if (area >= 1000000) return 3;
 
-      if (area >= 500000)
-        return 4
+      if (area >= 500000) return 4;
 
-      if (area >= 100000)
-        return 5;
+      if (area >= 100000) return 5;
 
-      if (area >= 50000)
-        return 6;
+      if (area >= 50000) return 6;
 
       return 9;
     },
     openMap: function (country) {
-      this.mapZoom = this.getAreaZoom(country.area)
+      this.mapZoom = this.getAreaZoom(country.area);
       this.mapQuery = country.name.common;
     },
-    closeMap: function() {
+    closeMap: function () {
       this.mapQuery = "";
-    }
+    },
   },
   computed: {
     sortedCountries: function () {
@@ -169,7 +159,7 @@ export default {
     isFlag: function () {
       return this.flag !== "";
     },
-    isCurrency: function () {
+    showCurrency: function () {
       return this.currency !== "";
     },
     showMap: function () {
@@ -187,7 +177,7 @@ export default {
       }
 
       return [];
-    }
+    },
   },
   mounted() {
     this.fetchCountries();
@@ -197,10 +187,4 @@ export default {
 
 <style>
 @import "~bulma/css/bulma.css";
-</style>
-
-<style scoped>
-  .chart-container {
-    background-color: #ffffff;
-  }
 </style>
