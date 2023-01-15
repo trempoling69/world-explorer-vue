@@ -8,13 +8,14 @@
       @currencyChange="updateBaseCurrency"
     ></currency-selector>
     <table class="table">
-      <theader>
+      <thead>
         <tr>
           <th>Name</th>
           <th>Languages</th>
           <th>Currencies</th>
+          <th>Map</th>
         </tr>
-      </theader>
+      </thead>
       <tbody>
         <tr v-for="country in filteredCountries" v-bind:key="country.fifa">
           <td>
@@ -37,6 +38,11 @@
                 </button>
               </li>
             </ul>
+          </td>
+          <td>
+                <button class="button is-ghost" @click="openMap(country)">
+                  Map
+                </button>
           </td>
         </tr>
       </tbody>
@@ -76,6 +82,19 @@
         @click="currency = ''"
       ></button>
     </div>
+    <div class="modal" :class="{ 'is-active': showMap }">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div>
+          <embedded-map :query="mapQuery" :zoom="mapZoom"></embedded-map>
+        </div>
+      </div>
+      <button
+        class="modal-close is-large"
+        aria-label="close"
+        @click="closeMap"
+      ></button>
+    </div>
   </div>
 </template>
 
@@ -83,10 +102,11 @@
 import axios from "axios";
 import ExchangeRateHistory from "./components/ExchangeRateHistory.vue";
 import CurrencySelector from "./components/CurrencySelector.vue";
+import EmbeddedMap from "./components/EmbeddedMap.vue";
 
 export default {
   name: "App",
-  components: { ExchangeRateHistory, CurrencySelector },
+  components: { ExchangeRateHistory, CurrencySelector, EmbeddedMap },
   data() {
     return {
       title: "World Explorer",
@@ -95,6 +115,8 @@ export default {
       flag: "",
       currency: "",
       baseCurrency: "EUR",
+      mapQuery: "",
+      mapZoom: 2
     };
   },
   methods: {
@@ -107,6 +129,31 @@ export default {
     updateBaseCurrency(newCurrency) {
       this.baseCurrency = newCurrency;
     },
+    getAreaZoom(area) {
+      if (area >= 10000000)
+        return 2;
+
+      if (area >= 1000000)
+        return 3;
+
+      if (area >= 500000)
+        return 4
+
+      if (area >= 100000)
+        return 5;
+
+      if (area >= 50000)
+        return 6;
+
+      return 9;
+    },
+    openMap: function (country) {
+      this.mapZoom = this.getAreaZoom(country.area)
+      this.mapQuery = country.name.common;
+    },
+    closeMap: function() {
+      this.mapQuery = "";
+    }
   },
   computed: {
     sortedCountries: function () {
@@ -125,6 +172,9 @@ export default {
     isCurrency: function () {
       return this.currency !== "";
     },
+    showMap: function () {
+      return this.mapQuery !== "";
+    },
     allCurrencies: function () {
       if (this.countries.length > 0) {
         const currencies = [];
@@ -137,7 +187,7 @@ export default {
       }
 
       return [];
-    },
+    }
   },
   mounted() {
     this.fetchCountries();
