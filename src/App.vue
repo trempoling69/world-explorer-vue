@@ -131,6 +131,7 @@ export default {
         c.name.common.toLowerCase().includes(this.filter.toLowerCase())
       );
     },
+    //hallutt 
     targetProperties: function () {
       let props = {};
 
