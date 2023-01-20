@@ -7,6 +7,7 @@
       :selectedCurrency="baseCurrency"
       @currencyChange="updateBaseCurrency"
     ></currency-selector>
+    <MapTypeSelector :selectedType="typeMap" @typeChange="updateTypeMap"/>
     <table class="table">
       <thead>
         <tr>
@@ -70,6 +71,7 @@ import CountryFlag from "./components/CountryFlag.vue";
 import CountryMap from "./components/CountryMap.vue";
 import CountryExchangeRate from "./components/CountryExchangeRate.vue";
 import CurrencySelector from "./components/CurrencySelector.vue";
+import MapTypeSelector from "./components/MapTypeSelector.vue";
 
 export default {
   name: "App",
@@ -78,6 +80,7 @@ export default {
     CountryMap,
     CountryExchangeRate,
     CurrencySelector,
+    MapTypeSelector
   },
   data() {
     return {
@@ -88,6 +91,7 @@ export default {
       targetComponent: "",
       targetCountry: null,
       targetCurrency: "",
+      typeMap: 'm'
     };
   },
   methods: {
@@ -102,6 +106,9 @@ export default {
     },
     updateBaseCurrency(newCurrency) {
       this.baseCurrency = newCurrency;
+    },
+    updateTypeMap(newType){
+      this.typeMap = newType;
     },
     openFlag: function (country) {
       this.targetCountry = country;
@@ -137,8 +144,11 @@ export default {
 
       switch (this.targetComponent) {
         case "CountryFlag":
+        props.country = this.targetCountry;
+        break;
         case "CountryMap":
           props.country = this.targetCountry;
+          props.selectedType = this.typeMap;
           break;
         case "CountryExchangeRate":
           props.country = this.targetCountry;
@@ -154,11 +164,17 @@ export default {
       return props;
     },
     targetEventHandlers: function () {
-      if (this.targetComponent === "CountryExchangeRate")
+      if (this.targetComponent === "CountryExchangeRate"){
         return {
           currencyChange: this.updateTargetCurrency,
           baseCurrencyChange: this.updateBaseCurrency,
         };
+      }
+      else if(this.targetComponent === "CountryMap"){
+        return{
+          typeChange: this.updateTypeMap
+        }
+      }
 
       return {};
     },

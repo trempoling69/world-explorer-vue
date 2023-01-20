@@ -1,5 +1,5 @@
 <template>
-  <embedded-map :query="mapQuery" :zoom="areaZoom"></embedded-map>
+  <embedded-map :query="mapQuery" :zoom="areaZoom" :selectedType="selectedType" @typeChange="handleTypeChange"></embedded-map>
 </template>
 <script>
 import EmbeddedMap from "./EmbeddedMap.vue";
@@ -12,6 +12,10 @@ export default {
       type: Object,
       default: null,
     },
+    selectedType:{
+      type: String,
+      default:'m'
+    }
   },
   computed: {
     mapQuery: function () {
@@ -33,6 +37,10 @@ export default {
       return 9;
     },
   },
-  methods: {},
+  methods: {
+    handleTypeChange : function(newType){
+      this.$emit("typeChange", newType)
+    }
+  },
 };
 </script>
